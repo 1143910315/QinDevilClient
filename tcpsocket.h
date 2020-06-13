@@ -14,11 +14,13 @@ public:
     void writeBuffer(Buffer **buffer, int data);
     void writeBuffer(Buffer **buffer, char *data, int dataLength);
     void sendBuffer(Buffer *buffer);
+    qint64 time;
 protected slots:
     void receiveData();
 private:
     BufferList *const bufferList;
     int dataLength = 0;
+    int effectiveDataLength;
     Buffer *buffer;
     AES aes;
 signals:

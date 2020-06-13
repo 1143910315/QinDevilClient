@@ -86,26 +86,34 @@ void TcpSocket::receiveData() {
     while(localBytesAvailable > 0) {
         if(dataLength == 0) {
             if(localBytesAvailable >= sizeof(dataLength)) {
-                localBytesAvailable -= read((char *)&dataLength, sizeof(dataLength));
-                if(dataLength < 0) {
-                    if(dataLength != Version) {
-                        emit version(dataLength);
+                localBytesAvailable -= read((char *)&effectiveDataLength, sizeof(effectiveDataLength));
+                if(effectiveDataLength < 0) {
+                    if(effectiveDataLength != Version) {
+                        emit version(effectiveDataLength);
                     } else {
+                        dataLength = VersionInfoLength;
                         buffer = bufferList->getBuffer(VersionInfoLength);
                     }
                 } else {
+                    effectiveDataLength = effectiveDataLength - 4;
+                    int mod = effectiveDataLength & 0xFFFFFFF0;
+                    if(mod != effectiveDataLength) {
+                        dataLength = mod + 16 + 4;
+                    } else {
+                        dataLength = effectiveDataLength + 4;
+                    }
                     buffer = bufferList->getBuffer(dataLength);
                 }
             } else {
                 break;
             }
-        } else if(dataLength == Version) {
+        } else if(effectiveDataLength == Version) {
             if(localBytesAvailable >= VersionInfoLength) {
                 char key[VersionInfoLength];
                 localBytesAvailable -= read(key, VersionInfoLength);
                 //qDebug("%u %u %u %u", ((int *)key)[0], ((int *)key)[1], ((int *)key)[2], ((int *)key)[3]);
                 aes.setKey(key);
-                emit version(dataLength);
+                emit version(Version);
                 dataLength = 0;
             } else {
                 break;
@@ -117,7 +125,8 @@ void TcpSocket::receiveData() {
             localBytesAvailable -= localRead;
             dataLength -= localRead;
             if(dataLength == 0) {
-                emit receive(*((int *)buffer->buffer), buffer->buffer + 4, buffer->length - 4);
+                aes.decode(buffer->buffer + 4, buffer->length - 4);
+                emit receive(*((int *)buffer->buffer), buffer->buffer + 4, effectiveDataLength);
                 bufferList->setBuffer(buffer);
             }
         }

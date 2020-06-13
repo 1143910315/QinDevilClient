@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTimer>
+#include <QElapsedTimer>
 #include "tcpsocket.h"
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -21,9 +23,13 @@ protected slots:
     void version(int v);
     void error(QAbstractSocket::SocketError socketError);
     void disconnected();
+    void sendPing();
 private:
     Ui::MainWindow *ui;
     BufferList bufferList;
     TcpSocket *client;
+    QByteArray userId;
+    QTimer *pingTimer;
+    QElapsedTimer timer;
 };
 #endif // MAINWINDOW_H
