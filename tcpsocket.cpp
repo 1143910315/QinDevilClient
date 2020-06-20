@@ -104,6 +104,7 @@ void TcpSocket::receiveData() {
                     }
                     buffer = bufferList->getBuffer(dataLength);
                 }
+                //qDebug("effectiveDataLength:%d  dataLength：%d", effectiveDataLength, dataLength);
             } else {
                 break;
             }
@@ -115,6 +116,7 @@ void TcpSocket::receiveData() {
                 aes.setKey(key);
                 emit version(Version);
                 dataLength = 0;
+                effectiveDataLength = 0;
             } else {
                 break;
             }

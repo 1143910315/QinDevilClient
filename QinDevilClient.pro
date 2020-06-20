@@ -21,20 +21,31 @@ SOURCES += \
     aes.cpp \
     buffer.cpp \
     bufferlist.cpp \
+    colorlabel.cpp \
+    colorlabelgroup.cpp \
+    dialog.cpp \
+    lesskeyvalidator.cpp \
     main.cpp \
     mainwindow.cpp \
     qaesencryption.cpp \
-    tcpsocket.cpp
+    tcpsocket.cpp \
+    windowshook.cpp
 
 HEADERS += \
     aes.h \
     buffer.h \
     bufferlist.h \
+    colorlabel.h \
+    colorlabelgroup.h \
+    dialog.h \
+    lesskeyvalidator.h \
     mainwindow.h \
     qaesencryption.h \
-    tcpsocket.h
+    tcpsocket.h \
+    windowshook.h
 
 FORMS += \
+    dialog.ui \
     mainwindow.ui
 
 TRANSLATIONS += \

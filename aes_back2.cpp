@@ -165,9 +165,15 @@ const unsigned char AES::Mul_0e[256] = {
 };
 
 AES::AES(QObject *parent) : QObject(parent) {
+    file = new QFile("D:/test.txt", this);
+    file->open(QFile::WriteOnly);
 }
 
 void AES::code(char *p, int plen) {
+    file->write(p, plen);
+    file->write("\n\n---------p-----------\n\n");
+    file->write(qPrintable(QString::number(plen)));
+    file->write("\n\n--------plen------------\n\n");
     int pArray[4][4];
     for(int k = 0; k < plen; k += 16) {
         convertToIntArray(p + k, pArray);
@@ -183,10 +189,16 @@ void AES::code(char *p, int plen) {
         shiftRows(pArray);//行移位
         addRoundKey(pArray, 10);
         convertArrayToStr(pArray, p + k);
+        file->write(p, plen);
+        file->write("\n\n--------------------\n\n");
     }
 }
 
 void AES::decode(char *c, int clen) {
+    file->write(c, clen);
+    file->write("\n\n--------c------------\n\n");
+    file->write(qPrintable(QString::number(clen)));
+    file->write("\n\n--------clen------------\n\n");
     int cArray[4][4];
     for(int k = 0; k < clen; k += 16) {
         convertToIntArray(c + k, cArray);
@@ -204,10 +216,12 @@ void AES::decode(char *c, int clen) {
         deShiftRows(cArray);
         addRoundKey(cArray, 0);
         convertArrayToStr(cArray, c + k);
+        file->write(c, clen);
+        file->write("\n\n--------------------\n\n");
     }
 }
 
-void AES::setKey(const char *key) {
+void AES::setKey(char *key) {
     extendKey(key);//扩展密钥
 }
 
@@ -219,29 +233,42 @@ int AES::checkKeyLen(int len) {
     }
 }
 
-void AES::extendKey(const char *key) {
+void AES::extendKey(char *key) {
+    file->write(key, 16);
+    file->write("\n\n--------key[16]------------\n\n");
     int *temp = (int *)key;
     for(int i = 0; i < 4; i++) {
         w[i] = temp[i];
+        file->write(qPrintable(QString::number(w[i], 16)));
+        file->write("\n\n--------w[i]------------\n\n");
     }
     for(int i = 4, j = 0; i < 44; i++) {
         if(i % 4 == 0) {
+            //if(i == 12) {
+            //    w[i] = w[i - 4] ^ T_test(w[i - 1], j);
+            //} else {
             w[i] = w[i - 4] ^ T(w[i - 1], j);
+            //}
             j++;//下一轮
+            file->write(qPrintable(QString::number(w[i], 16)));
+            file->write("\n\n--------w[i]---i % 4 == 0---------\n\n");
         } else {
             w[i] = w[i - 4] ^ w[i - 1];
+            file->write(qPrintable(QString::number(w[i], 16)));
+            file->write("\n\n--------w[i]---i % 4 != 0---------\n\n");
         }
     }
+    file->write((char *)w, 44 * 4);
+    file->write("\n\n--------w[44*4]------------\n\n");
 }
 
 void AES::convertToIntArray(char *str, int pa[4][4]) {
     int k = 0;
-    for(int i = 0; i < 4; i++) {
+    for(int i = 0; i < 4; i++)
         for(int j = 0; j < 4; j++) {
             pa[j][i] = getIntFromChar(str[k]);
             k++;
         }
-    }
 }
 
 void AES::addRoundKey(int array[4][4], int round) {
@@ -324,11 +351,10 @@ void AES::mixColumns(int array[4][4]) {
 
 void AES::deMixColumns(int array[4][4]) {
     int tempArray[4][4];
-    for(int i = 0; i < 4; i++) {
+    for(int i = 0; i < 4; i++)
         for(int j = 0; j < 4; j++) {
             tempArray[i][j] = array[i][j];
         }
-    }
     for(int i = 0; i < 4; i++) {
         for(int j = 0; j < 4; j++) {
             array[i][j] = GFMul(deColM[i][0], tempArray[0][j]) ^ GFMul(deColM[i][1], tempArray[1][j])
@@ -452,12 +478,51 @@ void AES::addRoundTowArray(int aArray[4][4], int bArray[4][4]) {
 
 int AES::T(int num, int round) {
     int lowBit = num & 0xFF;
-    unsigned char *temp = (unsigned char *)&num;
-    unsigned char *sbox = (unsigned char *)S;
-    temp[0] = sbox[(int)temp[3]];
-    temp[3] = sbox[(int)temp[2]];
-    temp[2] = sbox[(int)temp[1]];
+    char *temp = (char *)&num;
+    char *sbox = (char *)S;
+    temp[0] = sbox[(int)(temp[3])];
+    temp[3] = sbox[(int)(temp[2])];
+    temp[2] = sbox[(int)(temp[1])];
     temp[1] = sbox[lowBit];
+    return num ^ Rcon[round];
+}
+
+int AES::T_test(int num, int round) {
+    file->write(qPrintable(QString::number(num, 16)));
+    file->write("\n\n--------num------------\n\n");
+    int lowBit = num & 0xFF;
+    file->write(qPrintable(QString::number(lowBit, 16)));
+    file->write("\n\n--------lowBit------------\n\n");
+    char *temp = (char *)&num;
+    char *sbox = (char *)S;
+    file->write(qPrintable(QString::number((int)temp[0], 16)));
+    file->write("\n\n--------(int)temp[0]------------\n\n");
+    file->write(qPrintable(QString::number((int)temp[1], 16)));
+    file->write("\n\n--------(int)temp[1]------------\n\n");
+    file->write(qPrintable(QString::number((int)temp[2], 16)));
+    file->write("\n\n--------(int)temp[2]------------\n\n");
+    file->write(qPrintable(QString::number((int)temp[3], 16)));
+    file->write("\n\n--------(int)temp[3]------------\n\n");
+    file->write(qPrintable(QString::number((int)sbox[(int)(temp[3])], 16)));
+    file->write("\n\n--------sbox[(int)(temp[3])]------------\n\n");
+    temp[0] = sbox[(int)(temp[3])];
+    file->write(qPrintable(QString::number((int)sbox[(int)(temp[2])], 16)));
+    file->write("\n\n--------sbox[(int)(temp[2])]------------\n\n");
+    temp[3] = sbox[(int)(temp[2])];
+    file->write(qPrintable(QString::number((int)sbox[(int)(temp[1])], 16)));
+    file->write("\n\n--------sbox[(int)(temp[1])]------------\n\n");
+    temp[2] = sbox[(int)(temp[1])];
+    file->write(qPrintable(QString::number((int)sbox[lowBit], 16)));
+    file->write("\n\n--------sbox[lowBit]------------\n\n");
+    temp[1] = sbox[lowBit];
+    file->write(qPrintable(QString::number((int)temp[0], 16)));
+    file->write("\n\n--------(int)temp[0]------------\n\n");
+    file->write(qPrintable(QString::number((int)temp[1], 16)));
+    file->write("\n\n--------(int)temp[1]------------\n\n");
+    file->write(qPrintable(QString::number((int)temp[2], 16)));
+    file->write("\n\n--------(int)temp[2]------------\n\n");
+    file->write(qPrintable(QString::number((int)temp[3], 16)));
+    file->write("\n\n--------(int)temp[3]------------\n\n");
     return num ^ Rcon[round];
 }
 

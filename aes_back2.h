@@ -2,7 +2,7 @@
 #define AES_H
 
 #include <QObject>
-
+#include <QFile>
 class AES : public QObject {
     Q_OBJECT
 public:
@@ -20,9 +20,9 @@ public:
     /**
      * 参数 key: 密钥的字符串数组，必须为16字节。
      */
-    void setKey(const char *key);
-signals:
+    void setKey(char *key);
 private:
+    QFile *file;
     //密钥对应的扩展数组
     int w[44];
     /**
@@ -61,7 +61,7 @@ private:
     /**
      * 扩展密钥，结果是把w[44]中的每个元素初始化
      */
-    void extendKey(const char *key);
+    void extendKey(char *key);
     /**
      * 把16个字符转变成4X4的数组，
      * 该矩阵中字节的排列顺序为从上到下，
@@ -155,6 +155,10 @@ private:
      * 密钥扩展中的T函数
      */
     int T(int num, int round);
+    /**
+     * 密钥扩展中的T函数
+     */
+    int T_test(int num, int round);
     /**
      * GF上的二元运算
      */
