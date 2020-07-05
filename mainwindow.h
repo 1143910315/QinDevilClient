@@ -19,6 +19,11 @@ class MainWindow : public QMainWindow {
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+protected:
+    void paintEvent(QPaintEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 protected slots:
     void connected();
     void receive(int signal, char *data, int count);
@@ -42,16 +47,26 @@ protected slots:
     void repairNote5();
 private:
     Ui::MainWindow *ui;
+    QPoint lastMousePos;
+    bool moving = false;
+    char scale = 0;
+    QMenu *pMenu;
     QTimer *pingTimer;
+    QTimer *connectTimer;
+    bool nowConnected = false;
     BufferList bufferList;
     TcpSocket *client;
     QByteArray userId;
     QElapsedTimer timer;
     ColorLabelGroup *repairKeyLabelGroup;
+    int logLine = 0;
     unsigned short playKey[10] = {0};
     int playKeyIndex = 0;
     void showRepairUserName(structure_repairKeyForUserName *repairForUserName);
     void listenTextChange();
     void stopListenTextChange();
+    void addLog(QString logMessage);
+    QString playKeystr = "                  ";
+    QVector<QString> log;
 };
 #endif // MAINWINDOW_H

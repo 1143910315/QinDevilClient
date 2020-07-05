@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/new/prefix1">
+        <file>pic.png</file>
+        <file>head.png</file>
+        <file>close.png</file>
+        <file>close_hover.png</file>
+        <file>close_pressed.png</file>
+        <file>min.png</file>
+        <file>min_hover.png</file>
+        <file>min_pressed.png</file>
+    </qresource>
+</RCC>

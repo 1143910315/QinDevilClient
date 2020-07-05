@@ -34,20 +34,24 @@ void ColorLabel::paintEvent(QPaintEvent *event) {
 }
 
 void ColorLabel::mousePressEvent(QMouseEvent *event) {
+    //event->accept();
     if(event->button() == Qt::LeftButton) {
         leftClick = true;
         if(rightClick == true) {
             cancel = true;
         }
+        //event->setAccepted(true);
     } else if(event->button() == Qt::RightButton) {
         rightClick = true;
         if(leftClick == true) {
             cancel = true;
         }
+        //event->setAccepted(true);
     }
 }
 
 void ColorLabel::mouseReleaseEvent(QMouseEvent *event) {
+    //event->ignore();
     if(event->button() == Qt::LeftButton) {
         leftClick = false;
         if(cancel) {
@@ -59,6 +63,7 @@ void ColorLabel::mouseReleaseEvent(QMouseEvent *event) {
             emit singleChecked();
             //qDebug("emit singleChecked();");
         }
+        //event->setAccepted(true);
     } else if(event->button() == Qt::RightButton) {
         rightClick = false;
         if(cancel) {
@@ -70,8 +75,14 @@ void ColorLabel::mouseReleaseEvent(QMouseEvent *event) {
             emit multipleChecked(true);
             //qDebug("emit multipleChecked(true);");
         }
+        //event->setAccepted(true);
     }
     if(leftClick == false && rightClick == false) {
         cancel = false;
     }
+}
+
+void ColorLabel::contextMenuEvent(QContextMenuEvent *event) {
+    event->accept();
+    //qDebug("event->accept()");
 }

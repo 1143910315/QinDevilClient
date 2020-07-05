@@ -8,6 +8,7 @@ void ColorLabelGroup::addColorLabel(ColorLabel *label) {
     label->checked = false;
     label->colors.append(QColor(192, 192, 192));
     label->repaint();
+    //label->setText("\n\n");
     connect(label, &ColorLabel::singleChecked, this, &ColorLabelGroup::singleChecked);
     connect(label, &ColorLabel::multipleChecked, this, &ColorLabelGroup::multipleChecked);
 }

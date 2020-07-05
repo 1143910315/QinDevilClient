@@ -32,25 +32,55 @@ LRESULT CALLBACK keyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
                 }
                 if(localHook->controlNote1.code == KeyboardHookStruct->vkCode && localHook->controlNote1.ctrl == localHook->ctrl && localHook->controlNote1.alt == localHook->alt && localHook->controlNote1.shift == localHook->shift) {
                     localHook->triggerNote1();
+                    return 1;
                 }
                 if(localHook->controlNote2.code == KeyboardHookStruct->vkCode && localHook->controlNote2.ctrl == localHook->ctrl && localHook->controlNote2.alt == localHook->alt && localHook->controlNote2.shift == localHook->shift) {
                     localHook->triggerNote2();
+                    return 1;
                 }
                 if(localHook->controlNote3.code == KeyboardHookStruct->vkCode && localHook->controlNote3.ctrl == localHook->ctrl && localHook->controlNote3.alt == localHook->alt && localHook->controlNote3.shift == localHook->shift) {
                     localHook->triggerNote3();
+                    return 1;
                 }
                 if(localHook->controlNote4.code == KeyboardHookStruct->vkCode && localHook->controlNote4.ctrl == localHook->ctrl && localHook->controlNote4.alt == localHook->alt && localHook->controlNote4.shift == localHook->shift) {
                     localHook->triggerNote4();
+                    return 1;
                 }
                 if(localHook->controlNote5.code == KeyboardHookStruct->vkCode && localHook->controlNote5.ctrl == localHook->ctrl && localHook->controlNote5.alt == localHook->alt && localHook->controlNote5.shift == localHook->shift) {
                     localHook->triggerNote5();
+                    return 1;
                 }
                 if(localHook->controlClear.code == KeyboardHookStruct->vkCode && localHook->controlClear.ctrl == localHook->ctrl && localHook->controlClear.alt == localHook->alt && localHook->controlClear.shift == localHook->shift) {
                     localHook->triggerClear();
+                    return 1;
                 }
                 break;
             }
             case WM_KEYUP: {
+                //if(localHook->controlNote1.code == KeyboardHookStruct->vkCode && localHook->controlNote1.ctrl == localHook->ctrl && localHook->controlNote1.alt == localHook->alt && localHook->controlNote1.shift == localHook->shift) {
+                //localHook->triggerNote1();
+                //    return 1;
+                //}
+                //if(localHook->controlNote2.code == KeyboardHookStruct->vkCode && localHook->controlNote2.ctrl == localHook->ctrl && localHook->controlNote2.alt == localHook->alt && localHook->controlNote2.shift == localHook->shift) {
+                //localHook->triggerNote2();
+                //    return 1;
+                //}
+                //if(localHook->controlNote3.code == KeyboardHookStruct->vkCode && localHook->controlNote3.ctrl == localHook->ctrl && localHook->controlNote3.alt == localHook->alt && localHook->controlNote3.shift == localHook->shift) {
+                //localHook->triggerNote3();
+                //    return 1;
+                //}
+                //if(localHook->controlNote4.code == KeyboardHookStruct->vkCode && localHook->controlNote4.ctrl == localHook->ctrl && localHook->controlNote4.alt == localHook->alt && localHook->controlNote4.shift == localHook->shift) {
+                //localHook->triggerNote4();
+                //    return 1;
+                //}
+                //if(localHook->controlNote5.code == KeyboardHookStruct->vkCode && localHook->controlNote5.ctrl == localHook->ctrl && localHook->controlNote5.alt == localHook->alt && localHook->controlNote5.shift == localHook->shift) {
+                //localHook->triggerNote5();
+                //    return 1;
+                //}
+                //if(localHook->controlClear.code == KeyboardHookStruct->vkCode && localHook->controlClear.ctrl == localHook->ctrl && localHook->controlClear.alt == localHook->alt && localHook->controlClear.shift == localHook->shift) {
+                //localHook->triggerClear();
+                //    return 1;
+                //}
                 if(KeyboardHookStruct->vkCode == VK_LCONTROL) {
                     localHook->ctrl = false;
                 } else if(KeyboardHookStruct->vkCode == VK_LMENU) {
@@ -69,7 +99,7 @@ LRESULT CALLBACK keyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
 WindowsHook *WindowsHook::getInstance() {
     if(instance == nullptr) {
         instance = new WindowsHook();
-        mouseHook = SetWindowsHookEx(WH_MOUSE_LL, mouseProc, GetModuleHandle(NULL), 0);
+        //mouseHook = SetWindowsHookEx(WH_MOUSE_LL, mouseProc, GetModuleHandle(NULL), 0);
         keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, keyboardProc, GetModuleHandle(NULL), 0);
     }
     return instance;
