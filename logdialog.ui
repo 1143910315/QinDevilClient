@@ -24,7 +24,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QPushButton" name="pushButton_2">
+      <widget class="QPushButton" name="pushButton">
        <property name="text">
         <string>上一页</string>
        </property>
@@ -64,7 +64,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="pushButton_2">
        <property name="text">
         <string>下一页</string>
        </property>

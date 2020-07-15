@@ -2,6 +2,7 @@ QT       += core gui
 QT += network
 
 LIBS += -lUser32
+LIBS += -lGdi32
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 include(../QinDevilCommonStructure/QinDevilCommonStructure.pri)
@@ -26,12 +27,14 @@ SOURCES += \
     bufferlist.cpp \
     colorlabel.cpp \
     colorlabelgroup.cpp \
+    devicecontext.cpp \
     dialog.cpp \
     doubleclicklineedit.cpp \
     lesskeyvalidator.cpp \
     logdialog.cpp \
     main.cpp \
     mainwindow.cpp \
+    password.cpp \
     qaesencryption.cpp \
     tcpsocket.cpp \
     windowshook.cpp \
@@ -43,11 +46,13 @@ HEADERS += \
     bufferlist.h \
     colorlabel.h \
     colorlabelgroup.h \
+    devicecontext.h \
     dialog.h \
     doubleclicklineedit.h \
     lesskeyvalidator.h \
     logdialog.h \
     mainwindow.h \
+    password.h \
     qaesencryption.h \
     tcpsocket.h \
     windowshook.h \
@@ -56,7 +61,8 @@ HEADERS += \
 FORMS += \
     dialog.ui \
     logdialog.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    password.ui
 
 TRANSLATIONS += \
     QinDevilClient_zh_CN.ts

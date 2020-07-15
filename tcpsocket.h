@@ -3,7 +3,7 @@
 #include <QTcpSocket>
 #include "bufferlist.h"
 #include "aes.h"
-int constexpr Version = -3;
+int constexpr Version = -4;
 int constexpr VersionInfoLength = 16;
 class TcpSocket : public QTcpSocket {
     Q_OBJECT

@@ -6,6 +6,8 @@
 #include "windowshook.h"
 #include "windowsmethod.h"
 #include "doubleclicklineedit.h"
+#include "devicecontext.h"
+#include "password.h"
 #include "..\\QinDevilCommonStructure\\ccsysteminfo.h"
 #include <QCryptographicHash>
 #include <QMenu>
@@ -17,17 +19,33 @@
 #include <QPainter>
 #include <QBrush>
 #include <QGraphicsDropShadowEffect>
+#include <QTime>
+#include <QRandomGenerator>
 //#include <winuser.h>
 //constexpr auto ipHost = "127.0.0.1";
 //constexpr auto ipPort = 12580;
-constexpr auto ipHost = "q1143910315.gicp.net";
-constexpr auto ipPort = 11866;
+//constexpr auto ipHost = "q1143910315.gicp.net";
+constexpr auto ipHost = "a20v933449.imwork.net";
+//constexpr auto ipHost = "103.46.128.49";
+//constexpr auto ipPort = 11866;
 //constexpr auto ipHost ="116.62.125.206";
+constexpr int discern_timer_interval = 900;
+constexpr int hit_key_timer_interval = 150;
 #define const_color1 231,231,231
 #define const_color2 221,221,221
 #define const_color3 214,213,213
 #define const_color_red 231,51,82
 #define const_color_green 49,160,0
+#define const_gong_light_color 192,80,78
+#define const_shang_light_color 156,188,89
+#define const_jue_light_color 129,101,162
+#define const_zhi_light_color 75,172,197
+#define const_yu_light_color 246,150,71
+#define const_gong_dark_color 48,20,19
+#define const_shang_dark_color 39,47,22
+#define const_jue_dark_color 32,25,40
+#define const_zhi_dark_color 18,43,49
+#define const_yu_dark_color 62,37,18
 const int SHADOW_WIDTH = 5;
 #if Power
 #else
@@ -45,6 +63,21 @@ MainWindow::MainWindow(QWidget *parent)
     pMenu->addAction(ui->action1);
     pMenu->addAction(ui->action2);
     pMenu->addAction(ui->action3);
+    pMenu->addAction(ui->action6);
+    QMenu *pMenu2 = pMenu->addMenu("自动报缺");
+    pMenu2->addAction(ui->action4_0);
+    pMenu2->addAction(ui->action4_1);
+    pMenu2->addAction(ui->action4_2);
+    pMenu2->addAction(ui->action4_3);
+    pMenu2->addAction(ui->action4_4);
+    pMenu2 = pMenu->addMenu("自动弹琴");
+    pMenu2->addAction(ui->action5_0);
+    pMenu2->addAction(ui->action5_1);
+    pMenu2->addAction(ui->action5_2);
+    pMenu2->addAction(ui->action5_3);
+    pMenu2->addAction(ui->action5_4);
+    ui->action4_0->setChecked(true);
+    ui->action5_0->setChecked(true);
     setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->action, &QAction::triggered, [&](bool checked) {
         (void)checked;
@@ -58,14 +91,16 @@ MainWindow::MainWindow(QWidget *parent)
         if(checked) {
             unsigned int i = windowsMethod::GetWuXiaProcess();
             if(i == 0) {
-                this->windowHandle()->setParent(nullptr);
+                windowHandle()->setParent(nullptr);
             } else {
                 QWindow *w = QWindow::fromWinId(windowsMethod::GetWuXiaProcess());
-                this->windowHandle()->setParent(w);
+                windowHandle()->setParent(w);
             }
         } else {
             //QWindow *w = QWindow::fromWinId(0);
-            this->windowHandle()->setParent(nullptr);
+            windowHandle()->setParent(nullptr);
+            setAttribute(Qt::WA_TranslucentBackground, true);
+            setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint);
         }
         //windowsMethod::GetWuXiaProcess();
         //w->fi
@@ -82,6 +117,23 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->action3, &QAction::triggered, [&](bool checked) {
         //ui->horizontalLayout_3->widget()->setHidden(checked);
         ui->widget_2->setHidden(checked);
+    });
+    connect(ui->action4_0, &QAction::triggered, this, &MainWindow::autoLessKeyControl);
+    connect(ui->action4_1, &QAction::triggered, this, &MainWindow::autoLessKeyControl);
+    connect(ui->action4_2, &QAction::triggered, this, &MainWindow::autoLessKeyControl);
+    connect(ui->action4_3, &QAction::triggered, this, &MainWindow::autoLessKeyControl);
+    connect(ui->action4_4, &QAction::triggered, this, &MainWindow::autoLessKeyControl);
+    connect(ui->action5_0, &QAction::triggered, this, &MainWindow::autoPlayKeyControl);
+    connect(ui->action5_1, &QAction::triggered, this, &MainWindow::autoPlayKeyControl);
+    connect(ui->action5_2, &QAction::triggered, this, &MainWindow::autoPlayKeyControl);
+    connect(ui->action5_3, &QAction::triggered, this, &MainWindow::autoPlayKeyControl);
+    connect(ui->action5_4, &QAction::triggered, this, &MainWindow::autoPlayKeyControl);
+    connect(ui->action6, &QAction::triggered, [&]() {
+        Password *d = new Password(this);
+        d->port = this->ipPort;
+        d->exec();
+        this->ipPort = d->port;
+        delete d;
     });
     //ui->horizontalLayout_2.
     connect(this, &QMainWindow::customContextMenuRequested, [&](const QPoint & pos) {
@@ -230,6 +282,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(connectTimer, &QTimer::timeout, [&]() {
         client->connectToHost(ipHost, ipPort);
     });
+    discernTimer = new QTimer(this);
+    discernTimer->setSingleShot(true);
+    connect(discernTimer, &QTimer::timeout, this, &MainWindow::discernTimer_Elapsed);
+    hitKeyTimer = new QTimer(this);
+    hitKeyTimer->setSingleShot(true);
+    connect(hitKeyTimer, &QTimer::timeout, this, &MainWindow::hitKeyTimer_Elapsed);
     client->connectToHost(ipHost, ipPort);
     /*
     void(SubWidget::*backSignal)() = &SubWidget::backSignal;  // 我是没有参数的backSignal, 叫backSignal1
@@ -575,6 +633,10 @@ void MainWindow::receive(int signal, char *data, int count) {
                 }
             }
             ui->label_13->setText(playKeystr);
+            if(hitKeyTimerOnRun == false && !ui->action5_0->isChecked()) {
+                hitKeyTimerOnRun = true;
+                hitKeyTimer->start(hit_key_timer_interval);
+            }
             break;
         }
         case 5: {
@@ -591,7 +653,7 @@ void MainWindow::receive(int signal, char *data, int count) {
             ui->label_8->setText("\n\n");
             ui->label_9->setText("\n\n");
             ui->label_10->setText("\n\n");
-            playKeystr = "                 ";
+            playKeystr = "                  ";
             ui->label_13->setText("");
             ui->label_7->colors[0] = ui->label_8->colors[0] = ui->label_9->colors[0] = ui->label_10->colors[0] = QColor(const_color1);
             ui->label_7->colors[1] = ui->label_8->colors[1] = ui->label_9->colors[1] = ui->label_10->colors[1] = QColor(const_color2);
@@ -612,6 +674,15 @@ void MainWindow::receive(int signal, char *data, int count) {
             ui->label_10->repaint();
             playKeyIndex = 0;
             playKey[playKeyIndex] = 0;
+            hitKeyIndex = 0;
+            hitKeyRole = 0;
+            if(!ui->action4_0->isChecked()) {
+                discernTimer->start(discern_timer_interval);
+            }
+            if(!ui->action5_0->isChecked()) {
+                hitKeyTimerOnRun = false;
+                hitKeyTimer->stop();
+            }
             break;
         }
         case 6: {
@@ -624,6 +695,37 @@ void MainWindow::receive(int signal, char *data, int count) {
             int index = log.count() - 1;
             //qDebug("%s", qPrintable(QString::fromUtf16(receiveData->log, -1)));
             log[index] += QString::fromUtf16(receiveData->log, -1) + "\n";
+            break;
+        }
+        case 7: {
+            hitKeyRole = 1;
+            hitKeyTimer->start(hit_key_timer_interval);
+            break;
+        }
+        case 8: {
+            structure_askHitKeyIndex *receiveData = (structure_askHitKeyIndex *)data;
+            structure_replyHitKeyIndex sendData;
+            hitKeyRole = -1;
+            hitKeyTimer->stop();
+            sendData.clientId = receiveData->clientId;
+            sendData.index = hitKeyIndex;
+            sendData.time = receiveData->time;
+            Buffer *sendBuff = client->getSendBuffer(8, sizeof(sendData));
+            client->writeBuffer(&sendBuff, (char *)&sendData, sizeof(sendData));
+            client->sendBuffer(sendBuff);
+            break;
+        }
+        case 9: {
+            structure_hitKeyIndex *receiveData = (structure_hitKeyIndex *)data;
+            hitKeyRole = 2;
+            hitKeyIndex = receiveData->index;
+            int cd = timer.elapsed() - receiveData->time;
+            if(cd < 1) {
+                cd = 0;
+            } else if(cd > 999) {
+                cd = 999;
+            };
+            hitKeyTimer->start(1000 - cd);
             break;
         }
     }
@@ -649,7 +751,7 @@ void MainWindow::version(int v) {
 void MainWindow::error(QAbstractSocket::SocketError socketError) {
     //(void)socketError;
     //client->connectToHost(ipHost, ipPort);
-    qDebug("error:%d", socketError);
+    //qDebug("error:%d", socketError);
     if(nowConnected == false) {
         connectTimer->start(2000);
     }
@@ -661,7 +763,7 @@ void MainWindow::error(QAbstractSocket::SocketError socketError) {
 }
 
 void MainWindow::disconnected() {
-    qDebug("disconnected");
+    //qDebug("disconnected");
     pingTimer->stop();
     nowConnected = false;
     connectTimer->start(2000);
@@ -670,6 +772,7 @@ void MainWindow::disconnected() {
 }
 
 void MainWindow::sendPing() {
+    //findKillingIntentionStrip();
     structure_pingData d;
     d.time = timer.elapsed();
     Buffer *sendBuff = client->getSendBuffer(1, sizeof(d));
@@ -798,6 +901,156 @@ void MainWindow::repairNote4() {
 }
 
 void MainWindow::repairNote5() {
+}
+
+void MainWindow::autoLessKeyControl(bool checked) {
+    //qDebug("123456");
+    (void)checked;
+    ui->action4_0->setChecked(false);
+    ui->action4_1->setChecked(false);
+    ui->action4_2->setChecked(false);
+    ui->action4_3->setChecked(false);
+    ui->action4_4->setChecked(false);
+    QAction *senderObject = (QAction *)sender();
+    senderObject->setChecked(true);
+    if(!ui->action4_0->isChecked()) {
+        discernTimer->start(discern_timer_interval);
+    }
+}
+
+void MainWindow::autoPlayKeyControl(bool checked) {
+    (void)checked;
+    hitKeyTimerOnRun = false;
+    ui->action5_0->setChecked(false);
+    ui->action5_1->setChecked(false);
+    ui->action5_2->setChecked(false);
+    ui->action5_3->setChecked(false);
+    ui->action5_4->setChecked(false);
+    QAction *senderObject = (QAction *)sender();
+    senderObject->setChecked(true);
+    if(!ui->action5_0->isChecked()) {
+        hitKeyTimerOnRun = true;
+        hitKeyTimer->start(hit_key_timer_interval);
+    }
+}
+
+void MainWindow::discernTimer_Elapsed() {
+    //qDebug("123456789");
+    if(precondition()) {
+        //qDebug("1234567890");
+        char lessKey[5] {};
+        char findResult = findLessKey(lessKey);
+        //qDebug("%d | %d %d %d %d %d", (int)findResult, (int)lessKey[0], (int)lessKey[1], (int)lessKey[2], (int)lessKey[3], (int)lessKey[4]);
+        if(findResult == 1) {
+            QString lessStr = "";
+            for(int i = 0; i < 5; i++) {
+                if(lessKey[i] == -1) {
+                    lessStr += '1' + i;
+                }
+            }
+            if(ui->action4_1->isChecked()) {
+                ui->lineEdit->setText(lessStr);
+            } else if(ui->action4_2->isChecked()) {
+                ui->lineEdit_2->setText(lessStr);
+            } else if(ui->action4_3->isChecked()) {
+                ui->lineEdit_3->setText(lessStr);
+            } else if(ui->action4_4->isChecked()) {
+                ui->lineEdit_4->setText(lessStr);
+            }
+            return;
+        }
+    }
+    if(!ui->action4_0->isChecked()) {
+        discernTimer->start(discern_timer_interval);
+    }
+}
+
+void MainWindow::hitKeyTimer_Elapsed() {
+    //qDebug("%d %d", hitKeyRole, hitKeyIndex);
+    if(hitKeyRole == 2) {
+        hitkey();
+    } else if(hitKeyRole == -1) {
+        return;
+        //} else {
+    } else if(precondition()) {
+        char lessKey[5];
+        char findResult = findLessKey(lessKey);
+        if(findResult >= 0) {
+            //if(true) {
+            if(hitKeyRole == 0) {
+                structure_hitKeyNumber sendData;
+                if(ui->action5_1->isChecked()) {
+                    sendData.qinId = 0;
+                } else if(ui->action5_2->isChecked()) {
+                    sendData.qinId = 1;
+                } else if(ui->action5_3->isChecked()) {
+                    sendData.qinId = 2;
+                } else if(ui->action5_4->isChecked()) {
+                    sendData.qinId = 3;
+                } else {
+                    return;
+                }
+                sendData.time = timer.elapsed();
+                Buffer *sendBuff = client->getSendBuffer(7, sizeof(sendData));
+                client->writeBuffer(&sendBuff, (char *)&sendData, sizeof(sendData));
+                client->sendBuffer(sendBuff);
+                return;
+            } else if(hitKeyRole == 1) {
+                hitkey();
+            }
+        }
+    }
+    if(!ui->action5_0->isChecked()) {
+        hitKeyTimer->start(hit_key_timer_interval);
+    }
+}
+
+void MainWindow::hitkey() {
+    if(hitKeyIndex < 9) {
+        const QChar c = playKeystr.at(hitKeyIndex * 2);
+        hitKeyIndex++;
+        int msec = QRandomGenerator::global()->bounded(20, 60);
+        if(c == '1') {
+            windowsMethod::KeybdEvent(49, 0);
+            QTime dieTime = QTime::currentTime().addMSecs(msec);
+            while(QTime::currentTime() < dieTime) {
+                QCoreApplication::processEvents(QEventLoop::AllEvents, msec);
+            }
+            windowsMethod::KeybdEvent(49, 2);
+        } else if(c == '2') {
+            windowsMethod::KeybdEvent(50, 0);
+            QTime dieTime = QTime::currentTime().addMSecs(msec);
+            while(QTime::currentTime() < dieTime) {
+                QCoreApplication::processEvents(QEventLoop::AllEvents, msec);
+            }
+            windowsMethod::KeybdEvent(50, 2);
+        } else if(c == '3') {
+            windowsMethod::KeybdEvent(51, 0);
+            QTime dieTime = QTime::currentTime().addMSecs(msec);
+            while(QTime::currentTime() < dieTime) {
+                QCoreApplication::processEvents(QEventLoop::AllEvents, msec);
+            }
+            windowsMethod::KeybdEvent(51, 2);
+        } else if(c == '4') {
+            windowsMethod::KeybdEvent(52, 0);
+            QTime dieTime = QTime::currentTime().addMSecs(msec);
+            while(QTime::currentTime() < dieTime) {
+                QCoreApplication::processEvents(QEventLoop::AllEvents, msec);
+            }
+            windowsMethod::KeybdEvent(52, 2);
+        } else if(c == '5') {
+            windowsMethod::KeybdEvent(53, 0);
+            QTime dieTime = QTime::currentTime().addMSecs(msec);
+            while(QTime::currentTime() < dieTime) {
+                QCoreApplication::processEvents(QEventLoop::AllEvents, msec);
+            }
+            windowsMethod::KeybdEvent(53, 2);
+        } else {
+            hitKeyIndex--;
+        }
+    } else {
+        hitKeyRole = -1;
+    }
 }
 
 void MainWindow::showRepairUserName(structure_repairKeyForUserName *repairForUserName) {
@@ -1014,5 +1267,284 @@ void MainWindow::addLog(QString logMessage) {
     }
     int index = log.count() - 1;
     log[index] += logMessage + "\n";
+}
+
+bool MainWindow::precondition() {
+    if(FiveToneReady == false) {
+        if(killingIntentionStrip == 0 || preconditionTimes > 5) {
+            int localFindKillingIntentionStrip = findKillingIntentionStrip();
+            if(localFindKillingIntentionStrip > 0) {
+                killingIntentionStrip = localFindKillingIntentionStrip;
+            }
+            //qDebug("!!%d", localFindKillingIntentionStrip);
+            preconditionTimes = 0;
+        } else  {
+            if(!findKeyPosition()) {
+                preconditionTimes++;
+            }
+        }
+    }
+    //qDebug("%d!!", FiveToneReady ? 1 : 0);
+    return FiveToneReady;
+}
+
+bool MainWindow::getWuXiaPosition(int &x, int &y, int &width, int &height) {
+    unsigned int i = windowsMethod::GetWuXiaProcess();
+    if(i != 0) {
+        QRect rect = windowsMethod::GetWinRect(i);
+        //qDebug("%d %d %d %d", rect.x(), rect.y(), rect.right(), rect.bottom());
+        if(rect.bottom() > 100 && rect.right() > 100) {
+            QPoint point;
+            point.setX(0);
+            point.setY(0);
+            if(windowsMethod::ClientPointToScreen(i, point)) {
+                x = point.x();
+                y = point.y();
+                width = rect.right();
+                height = rect.bottom();
+                return true;
+                //qDebug("%d %d %d %d", x, y, width, height);
+            }
+        }
+    }
+    return false;
+}
+
+int MainWindow::findKillingIntentionStrip() {
+    int x, y, width, height;
+    //qDebug("asdf");
+    if(getWuXiaPosition(x, y, width, height)) {
+        int startX = x + (width / 2);
+        int endX = startX + 1;
+        int startY = y;
+        int endY = y + height;
+        //qDebug("--%d %d %d %d", startX, startY, endX, endY);
+        DeviceContext DC;
+        if(DC.GetDeviceContext(0)) {
+            QRect cacheRect;
+            cacheRect.setX(startX);
+            cacheRect.setY(startY);
+            cacheRect.setRight(endX);
+            cacheRect.setBottom(endY);
+            DC.CacheRegion(cacheRect);
+            //qDebug("--%d %d %d %d", startX, startY, endX, endY);
+            QColor color = QColor(254, 184, 0);
+            for(int i = endY - 1; i > startY; i--) {
+                QColor color2 = DC.GetPointColor(startX, i);
+                //addLog(QString::asprintf("%d", i));
+                if(GetYUVVariance(color, color2) < 5) {
+                    //qDebug("--%d", height - i + y);
+                    return height - i + y;
+                }
+            }
+        }
+    }
+    //addLog(QString::asprintf("%d %d %d %d", winRect.x(), winRect.y(), winRect.right(), winRect.bottom()));
+    return 0;
+}
+
+int MainWindow::GetYUVVariance(const QColor &c1, const QColor &c2) {
+    int a = c1.alpha() - c2.alpha();
+    //return AYUVColor.FromAYUV(A, 0.299 * R + 0.587 * G + 0.114 * B, -0.147 * R - 0.289 * G + 0.436 * B, 0.615 * R - 0.515 * G - 0.100 * B);
+    double Y1 = 0.299 * c1.red() + 0.587 * c1.green() + 0.114 * c1.blue();
+    double Y2 = 0.299 * c2.red() + 0.587 * c2.green() + 0.114 * c2.blue();
+    double U1 = -0.147 * c1.red() - 0.289 * c1.green() + 0.436 * c1.blue();
+    double U2 = -0.147 * c2.red() - 0.289 * c2.green() + 0.436 * c2.blue();
+    double V1 = 0.615 * c1.red() - 0.515 * c1.green() - 0.100 * c1.blue();
+    double V2 = 0.615 * c2.red() - 0.515 * c2.green() - 0.100 * c2.blue();
+    double y = Y1 - Y2;
+    double u = U1 - U2;
+    double v = V1 - V2;
+    return a * a + y * y + u * u + v * v;
+}
+
+bool MainWindow::findKeyPosition() {
+    int x, y, width, height;
+    if(getWuXiaPosition(x, y, width, height)) {
+        QColor qinKeyColor[5];
+        qinKeyColor[0] = QColor(const_gong_light_color);
+        qinKeyColor[1] = QColor(const_shang_light_color);
+        qinKeyColor[2] = QColor(const_jue_light_color);
+        qinKeyColor[3] = QColor(const_zhi_light_color);
+        qinKeyColor[4] = QColor(const_yu_light_color);
+        int startX = x;
+        int endX = x + (width / 2);
+        int middleY = y + height - (killingIntentionStrip / 2);
+        int startY = middleY - 5;
+        int endY = startY + 10;
+        DeviceContext DC;
+        if(DC.GetDeviceContext(0)) {
+            QRect cacheRect;
+            cacheRect.setX(startX);
+            cacheRect.setY(startY);
+            cacheRect.setRight(endX);
+            cacheRect.setBottom(endY);
+            DC.CacheRegion(cacheRect);
+            int tempFiveTone[5];
+            int i = endX;
+            for(int j = 4; j > -1;) {
+                for(; i > startX; i--) {
+                    QColor color = DC.GetPointColor(i, middleY);
+                    if(GetYUVVariance(color, qinKeyColor[j]) < 25) {
+                        int matchTime = 1;
+                        for(int k = 0; k < 8; k++) {
+                            color = DC.GetPointColor(i, middleY - k - 1);
+                            if(matchTime < 8 && GetYUVVariance(color, qinKeyColor[j]) < 25) {
+                                matchTime += 1;
+                            } else {
+                                break;
+                            }
+                        }
+                        for(int k = 1; k < 8; k++) {
+                            color = DC.GetPointColor(i, middleY + k);
+                            if(matchTime < 8 && GetYUVVariance(color, qinKeyColor[j]) < 25) {
+                                matchTime += 1;
+                            } else {
+                                break;
+                            }
+                        }
+                        if(matchTime > 7) {
+                            tempFiveTone[j] = i - x;
+                            if(j == 0) {
+                                FiveTone[0] = tempFiveTone[0];
+                                FiveTone[1] = tempFiveTone[1];
+                                FiveTone[2] = tempFiveTone[2];
+                                FiveTone[3] = tempFiveTone[3];
+                                FiveTone[4] = tempFiveTone[4];
+                                //addLog(QString::asprintf("%d %d %d %d %d", FiveTone[0], FiveTone[1], FiveTone[2], FiveTone[3], FiveTone[4]));
+                                FiveToneReady = true;
+                                //gameData.FiveTone = tempFiveTone;
+                                //gameData.FiveToneReady = true;
+                                //Dispatcher.Invoke(() => {
+                                //    combo.IsEnabled = true;
+                                //});
+                                //lock(sendData) {
+                                //    sendData.Clear();
+                                //    SerializeTool.IntToByteList(gameData.FiveTone[0], sendData);
+                                //    SerializeTool.IntToByteList(gameData.FiveTone[1], sendData);
+                                //    SerializeTool.IntToByteList(gameData.FiveTone[2], sendData);
+                                //    SerializeTool.IntToByteList(gameData.FiveTone[3], sendData);
+                                //    SerializeTool.IntToByteList(gameData.FiveTone[4], sendData);
+                                //    client.SendPackage(12, sendData.ToArray());
+                                //}
+                                return true;
+                            }
+                            break;
+                        }
+                    }
+                }
+                j--;
+            }
+        }
+    }
+    return false;
+}
+
+char MainWindow::findLessKey(char (&keyLessState)[5]) {
+    int x, y, width, height;
+    if(getWuXiaPosition(x, y, width, height)) {
+        QColor qinKeyColor [10];
+        qinKeyColor[0] = QColor(const_gong_light_color);
+        qinKeyColor[1] = QColor(const_shang_light_color);
+        qinKeyColor[2] = QColor(const_jue_light_color);
+        qinKeyColor[3] = QColor(const_zhi_light_color);
+        qinKeyColor[4] = QColor(const_yu_light_color);
+        qinKeyColor[5] = QColor(const_gong_dark_color);
+        qinKeyColor[6] = QColor(const_shang_dark_color);
+        qinKeyColor[7] = QColor(const_jue_dark_color);
+        qinKeyColor[8] = QColor(const_zhi_dark_color);
+        qinKeyColor[9] = QColor(const_yu_dark_color);
+        DeviceContext DC ;
+        if(DC.GetDeviceContext(0)) {
+            QRect cacheRect;
+            cacheRect.setX(x + FiveTone[0] - 5);
+            cacheRect.setY(y + height - (killingIntentionStrip / 2));
+            cacheRect.setRight(x + FiveTone[4] + 1);
+            cacheRect.setBottom(y + height - (killingIntentionStrip / 2) + 1);
+            DC.CacheRegion(cacheRect);
+            //_ = DC.CacheRegion(new DeviceContext.Rect { left = point.x + gameData.FiveTone[0] - 5, right = point.x + gameData.FiveTone[4] + 1, top = point.y + rect.bottom - (gameData.KillingIntentionStrip / 2), bottom = point.y + rect.bottom - (gameData.KillingIntentionStrip / 2) + 1 });
+            int success = 0;
+            int fail = 0;
+            //string lessKey = "";
+            for(int i = 0; i < 5; i++) {
+                //qDebug("12");
+                QColor color = DC.GetPointColor(x + FiveTone[i], y + height - (killingIntentionStrip / 2));
+                //qDebug("%d %d", x + FiveTone[i], y + height - (killingIntentionStrip / 2));
+                //qDebug("%d %d %d", color.red(), color.green(), color.blue());
+                //qDebug("%d %d %d", qinKeyColor[i].red(), qinKeyColor[i].green(), qinKeyColor[i].blue());
+                if(GetYUVVariance(color, qinKeyColor[i]) < 25) {
+                    success++;
+                    keyLessState[i] = 1;
+                } else if(GetYUVVariance(color, qinKeyColor[i + 5]) < 25) {
+                    fail++;
+                    keyLessState[i] = -1;
+                    //lessKey += (i + 1).ToString();
+                } else {
+                    for(int m = 1; m < 5; m++) {
+                        color = DC.GetPointColor(x + FiveTone[i] - m, y + height - (killingIntentionStrip / 2));
+                        if(GetYUVVariance(color, qinKeyColor[i]) < 25) {
+                            success++;
+                            keyLessState[i] = 1;
+                            break;
+                        } else if(GetYUVVariance(color, qinKeyColor[i + 5]) < 25) {
+                            fail++;
+                            keyLessState[i] = -1;
+                            //lessKey += (i + 1).ToString();
+                            break;
+                        }
+                    }
+                }
+            }
+            if(success + fail == 5) {
+                if(fail > 0 && fail < 4) {
+                    return 1;
+                    //if (AutoLessKey) {
+                    //    //Dispatcher.Invoke(() => {
+                    //    //    switch (combo.SelectedIndex) {
+                    //    //        case 0:
+                    //    //            gameData.No1Qin = lessKey;
+                    //    //            client.SendPackage(1, SerializeTool.StringToByte(gameData.No1Qin));
+                    //    //            break;
+                    //    //        case 1:
+                    //    //            gameData.No2Qin = lessKey;
+                    //    //            client.SendPackage(2, SerializeTool.StringToByte(gameData.No2Qin));
+                    //    //            break;
+                    //    //        case 2:
+                    //    //            gameData.No3Qin = lessKey;
+                    //    //            client.SendPackage(3, SerializeTool.StringToByte(gameData.No3Qin));
+                    //    //            break;
+                    //    //        case 3:
+                    //    //            gameData.No4Qin = lessKey;
+                    //    //            client.SendPackage(4, SerializeTool.StringToByte(gameData.No4Qin));
+                    //    //            break;
+                    //    //        default:
+                    //    //            break;
+                    //    //    }
+                    //    //});
+                    //}
+                    //client.SendPackage(13, SerializeTool.StringToByte(lessKey));
+                    //return;
+                }
+                return 0;
+            } else if(success + fail > 3) {
+                return 2;
+                //if (discernTimers++ < 5) {
+                //    lock (sendData) {
+                //        sendData.Clear();
+                //        SerializeTool.IntToByteList(success, sendData);
+                //        SerializeTool.IntToByteList(fail, sendData);
+                //        for (int i = 0; i < 5; i++) {
+                //            ARGBColor color = ARGBColor.FromInt(DC.GetPointColor(point.x + gameData.FiveTone[i], point.y + rect.bottom - (gameData.KillingIntentionStrip / 2)));
+                //            SerializeTool.IntToByteList(color.R, sendData);
+                //            SerializeTool.IntToByteList(color.G, sendData);
+                //            SerializeTool.IntToByteList(color.B, sendData);
+                //        }
+                //        client.SendPackage(16, sendData.ToArray());
+                //    }
+                //}
+            }
+        }
+    }
+    return -1;
 }
 

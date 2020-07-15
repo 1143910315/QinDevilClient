@@ -70,7 +70,40 @@ unsigned int windowsMethod::GetWuXiaProcess() {
     }
     //ts << QString("超退出！");
     //ts.flush();
-    return -1;
+    return 0;
+}
+
+QRect windowsMethod::GetWinRect(unsigned int windowHandle) {
+    RECT rect;
+    rect.top = 0;
+    rect.left = 0;
+    rect.bottom = 0;
+    rect.right = 0;
+    GetWindowRect((HWND)windowHandle, &rect);
+    QRect r;
+    r.setX(rect.left);
+    r.setY(rect.top);
+    r.setRight(rect.right);
+    r.setBottom(rect.bottom);
+    return r;
+}
+
+bool windowsMethod::ClientPointToScreen(unsigned int windowHandle, QPoint &p) {
+    POINT point;
+    point.x = p.x();
+    point.y = p.y();
+    if(ClientToScreen((HWND)windowHandle, &point)) {
+        p.setX(point.x);
+        p.setY(point.y);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void windowsMethod::KeybdEvent(unsigned char keyId, int keyState) {
+    //Keybd_event(49, MapVirtualKeyA(49, 0), 8, 0);
+    keybd_event(keyId, MapVirtualKeyA(keyId, 0), keyState + 8, 0);
 }
 
 

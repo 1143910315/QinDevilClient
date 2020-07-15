@@ -45,7 +45,12 @@ protected slots:
     void repairNote3();
     void repairNote4();
     void repairNote5();
+    void autoLessKeyControl(bool checked);
+    void autoPlayKeyControl(bool checked);
+    void discernTimer_Elapsed();
+    void hitKeyTimer_Elapsed();
 private:
+    int ipPort = 18925;
     Ui::MainWindow *ui;
     QPoint lastMousePos;
     bool moving = false;
@@ -53,6 +58,8 @@ private:
     QMenu *pMenu;
     QTimer *pingTimer;
     QTimer *connectTimer;
+    QTimer *discernTimer;
+    QTimer *hitKeyTimer;
     bool nowConnected = false;
     BufferList bufferList;
     TcpSocket *client;
@@ -62,11 +69,26 @@ private:
     int logLine = 0;
     unsigned short playKey[10] = {0};
     int playKeyIndex = 0;
+    QString playKeystr = "                  ";
+    bool hitKeyTimerOnRun = false;
+    char hitKeyRole = 0;
+    int hitKeyIndex = 0;
+    void hitkey();
     void showRepairUserName(structure_repairKeyForUserName *repairForUserName);
     void listenTextChange();
     void stopListenTextChange();
     void addLog(QString logMessage);
-    QString playKeystr = "                  ";
+    bool precondition();
+    char preconditionTimes = 0;
+    int killingIntentionStrip = 0;
+    int FiveTone[5];
+    bool FiveToneReady = false;
+    //bool AutoLessKey=false;
+    bool getWuXiaPosition(int &x, int &y, int &width, int &height);
+    int findKillingIntentionStrip();
+    int GetYUVVariance(const QColor &c1, const QColor &c2);
+    bool findKeyPosition();
+    char findLessKey(char (&keyLessState)[5]);
     QVector<QString> log;
 };
 #endif // MAINWINDOW_H
