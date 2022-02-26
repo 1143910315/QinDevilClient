@@ -157,6 +157,47 @@
         <source>输入密码</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>程序启动
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>自动报缺</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>自动弹琴</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>连接遭到服务器拒绝</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>发生了一个网络错误，但是我不告诉你</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>因外部原因，连接服务器的通道被关闭</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>== 一号琴 ==</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>== 二号琴 ==</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>== 三号琴 ==</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>== 四号琴 ==</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Password</name>

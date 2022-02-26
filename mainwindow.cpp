@@ -58,20 +58,20 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow) {
     ui->setupUi(this);
     // this->showFullScreen();
-    log.append("程序启动\n");
+    log.append(tr("程序启动\n"));
     pMenu = new QMenu(this);
     pMenu->addAction(ui->action);
     pMenu->addAction(ui->action1);
     pMenu->addAction(ui->action2);
     pMenu->addAction(ui->action3);
     // pMenu->addAction(ui->action6);
-    QMenu *pMenu2 = pMenu->addMenu("自动报缺");
+    QMenu *pMenu2 = pMenu->addMenu(tr("自动报缺"));
     pMenu2->addAction(ui->action4_0);
     pMenu2->addAction(ui->action4_1);
     pMenu2->addAction(ui->action4_2);
     pMenu2->addAction(ui->action4_3);
     pMenu2->addAction(ui->action4_4);
-    pMenu2 = pMenu->addMenu("自动弹琴");
+    pMenu2 = pMenu->addMenu(tr("自动弹琴"));
     pMenu2->addAction(ui->action5_0);
     pMenu2->addAction(ui->action5_1);
     pMenu2->addAction(ui->action5_2);
@@ -658,10 +658,10 @@ void MainWindow::receive(int signal, char *data, int count) {
             ui->label_23->setPalette(pe);
             ui->label_24->setPalette(pe);
             ui->label_25->setPalette(pe);
-            ui->label_22->setText("一号琴");
-            ui->label_23->setText("二号琴");
-            ui->label_24->setText("三号琴");
-            ui->label_25->setText("四号琴");
+            ui->label_22->setText(tr("一号琴"));
+            ui->label_23->setText(tr("二号琴"));
+            ui->label_24->setText(tr("三号琴"));
+            ui->label_25->setText(tr("四号琴"));
             ui->label_7->repaint();
             ui->label_8->repaint();
             ui->label_9->repaint();
@@ -749,9 +749,9 @@ void MainWindow::error(QAbstractSocket::SocketError socketError) {
         connectTimer->start(2000);
     }
     if (socketError == QAbstractSocket::ConnectionRefusedError) {
-        addLog("连接遭到服务器拒绝");
+        addLog(tr("连接遭到服务器拒绝"));
     } else {
-        addLog("发生了一个网络错误，但是我不告诉你");
+        addLog(tr("发生了一个网络错误，但是我不告诉你"));
     }
 }
 void MainWindow::disconnected() {
@@ -759,7 +759,7 @@ void MainWindow::disconnected() {
     pingTimer->stop();
     nowConnected = false;
     connectTimer->start(2000);
-    addLog("因外部原因，连接服务器的通道被关闭");
+    addLog(tr("因外部原因，连接服务器的通道被关闭"));
     // client->connectToHost(ipHost, ipPort);
 }
 void MainWindow::sendPing() {
@@ -1041,7 +1041,7 @@ void MainWindow::showRepairUserName(structure_repairKeyForUserName *repairForUse
         if (temp == ui->lineEdit_5->text()) {
             ui->label_7->colors[0] = QColor(const_color_green);
             ui->label_22->setPalette(pe);
-            ui->label_22->setText("== 一号琴 ==");
+            ui->label_22->setText(tr("== 一号琴 =="));
         } else {
             ui->label_7->colors[0] = QColor(const_color_red);
         }
@@ -1055,7 +1055,7 @@ void MainWindow::showRepairUserName(structure_repairKeyForUserName *repairForUse
         if (temp == ui->lineEdit_5->text()) {
             ui->label_7->colors[1] = QColor(const_color_green);
             ui->label_22->setPalette(pe);
-            ui->label_22->setText("== 一号琴 ==");
+            ui->label_22->setText(tr("== 一号琴 =="));
         } else {
             ui->label_7->colors[1] = QColor(const_color_red);
         }
@@ -1069,7 +1069,7 @@ void MainWindow::showRepairUserName(structure_repairKeyForUserName *repairForUse
         if (temp == ui->lineEdit_5->text()) {
             ui->label_7->colors[2] = QColor(const_color_green);
             ui->label_22->setPalette(pe);
-            ui->label_22->setText("== 一号琴 ==");
+            ui->label_22->setText(tr("== 一号琴 =="));
         } else {
             ui->label_7->colors[2] = QColor(const_color_red);
         }
@@ -1083,7 +1083,7 @@ void MainWindow::showRepairUserName(structure_repairKeyForUserName *repairForUse
         if (temp == ui->lineEdit_5->text()) {
             ui->label_8->colors[0] = QColor(const_color_green);
             ui->label_23->setPalette(pe);
-            ui->label_23->setText("== 二号琴 ==");
+            ui->label_23->setText(tr("== 二号琴 =="));
         } else {
             ui->label_8->colors[0] = QColor(const_color_red);
         }
@@ -1097,7 +1097,7 @@ void MainWindow::showRepairUserName(structure_repairKeyForUserName *repairForUse
         if (temp == ui->lineEdit_5->text()) {
             ui->label_8->colors[1] = QColor(const_color_green);
             ui->label_23->setPalette(pe);
-            ui->label_23->setText("== 二号琴 ==");
+            ui->label_23->setText(tr("== 二号琴 =="));
         } else {
             ui->label_8->colors[1] = QColor(const_color_red);
         }
@@ -1111,7 +1111,7 @@ void MainWindow::showRepairUserName(structure_repairKeyForUserName *repairForUse
         if (temp == ui->lineEdit_5->text()) {
             ui->label_8->colors[2] = QColor(const_color_green);
             ui->label_23->setPalette(pe);
-            ui->label_23->setText("== 二号琴 ==");
+            ui->label_23->setText(tr("== 二号琴 =="));
         } else {
             ui->label_8->colors[2] = QColor(const_color_red);
         }
@@ -1125,7 +1125,7 @@ void MainWindow::showRepairUserName(structure_repairKeyForUserName *repairForUse
         if (temp == ui->lineEdit_5->text()) {
             ui->label_9->colors[0] = QColor(const_color_green);
             ui->label_24->setPalette(pe);
-            ui->label_24->setText("== 三号琴 ==");
+            ui->label_24->setText(tr("== 三号琴 =="));
         } else {
             ui->label_9->colors[0] = QColor(const_color_red);
         }
@@ -1139,7 +1139,7 @@ void MainWindow::showRepairUserName(structure_repairKeyForUserName *repairForUse
         if (temp == ui->lineEdit_5->text()) {
             ui->label_9->colors[1] = QColor(const_color_green);
             ui->label_24->setPalette(pe);
-            ui->label_24->setText("== 三号琴 ==");
+            ui->label_24->setText(tr("== 三号琴 =="));
         } else {
             ui->label_9->colors[1] = QColor(const_color_red);
         }
@@ -1153,7 +1153,7 @@ void MainWindow::showRepairUserName(structure_repairKeyForUserName *repairForUse
         if (temp == ui->lineEdit_5->text()) {
             ui->label_9->colors[2] = QColor(const_color_green);
             ui->label_24->setPalette(pe);
-            ui->label_24->setText("== 三号琴 ==");
+            ui->label_24->setText(tr("== 三号琴 =="));
         } else {
             ui->label_9->colors[2] = QColor(const_color_red);
         }
@@ -1167,7 +1167,7 @@ void MainWindow::showRepairUserName(structure_repairKeyForUserName *repairForUse
         if (temp == ui->lineEdit_5->text()) {
             ui->label_10->colors[0] = QColor(const_color_green);
             ui->label_25->setPalette(pe);
-            ui->label_25->setText("== 四号琴 ==");
+            ui->label_25->setText(tr("== 四号琴 =="));
         } else {
             ui->label_10->colors[0] = QColor(const_color_red);
         }
@@ -1181,7 +1181,7 @@ void MainWindow::showRepairUserName(structure_repairKeyForUserName *repairForUse
         if (temp == ui->lineEdit_5->text()) {
             ui->label_10->colors[1] = QColor(const_color_green);
             ui->label_25->setPalette(pe);
-            ui->label_25->setText("== 四号琴 ==");
+            ui->label_25->setText(tr("== 四号琴 =="));
         } else {
             ui->label_10->colors[1] = QColor(const_color_red);
         }
@@ -1195,7 +1195,7 @@ void MainWindow::showRepairUserName(structure_repairKeyForUserName *repairForUse
         if (temp == ui->lineEdit_5->text()) {
             ui->label_10->colors[2] = QColor(const_color_green);
             ui->label_25->setPalette(pe);
-            ui->label_25->setText("== 四号琴 ==");
+            ui->label_25->setText(tr("== 四号琴 =="));
         } else {
             ui->label_10->colors[2] = QColor(const_color_red);
         }
