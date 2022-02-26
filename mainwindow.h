@@ -50,7 +50,7 @@ protected slots:
     void discernTimer_Elapsed();
     void hitKeyTimer_Elapsed();
 private:
-    int ipPort = 18925;
+    //int ipPort = 18925;
     Ui::MainWindow *ui;
     QPoint lastMousePos;
     bool moving = false;
